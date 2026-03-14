@@ -7,7 +7,7 @@ const server = createServer((req, res) => {
   
   // Taken from https://nodejs.org/en/learn/http/anatomy-of-an-http-transaction#a-quick-thing-about-errors
   let body = [];
-  request
+  req
     .on('data', chunk => {
       body.push(chunk);
     })
