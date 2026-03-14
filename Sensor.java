@@ -11,15 +11,18 @@ public class Sensor {
     // loop for the sake of the CI/CD pipeline
 
     // test
-    try {
-      sendPacket(5.0);
-    } catch (Exception exception) {
-      System.err.println("err while sending packet: " + exception.getMessage());
-    }
 
     int count = 0;
     while (count < 200) {
-      //System.out.println("Sensor read: " + Math.random() * 25 + 15);
+      double data = Math.random() * 25 + 15;
+
+      // System.out.println("Sensor read: " + data);
+
+      try {
+        sendPacket(data);
+      } catch (Exception e) {
+        System.err.println("err while sending packet: " + e);
+      }
       count++;
     }
   }
@@ -28,16 +31,21 @@ public class Sensor {
   private static void sendPacket(double measurement) throws Exception {
     String hostname = "127.0.0.1";
     int port = 3000;
-    LocalTime currentTime = LocalTime.now();
+    // LocalTime currentTime = LocalTime.now();
 
-    String message = "what's up. Measurement: " + measurement + " at time: " + currentTime; // TODO: this should be json
-                                                                                            // format
+    // Java has JSON libraries, but manually contructed JSON will
+    // be easier for us probably
+    String message = """
+        {
+          "measurement": "%f"
+        }
+        """.formatted(measurement);
 
     HttpClient client = HttpClient.newHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
         .uri(URI.create("http://" + hostname + ":" + port))
-        .header("Content-Type", "text/plain")
+        .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(message))
         .build();
 
