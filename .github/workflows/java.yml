@@ -19,7 +19,7 @@ jobs:
 
       - name: Compile Sensor and Tests
         run: javac Sensor.java
-        run: javac -cp ".:junit-jupiter-api-5.10.0.jar" TestCases.java
+              javac -cp ".:junit-jupiter-api-5.10.0.jar" TestCases.java
 
       - name: Download JUnit
         run: |
