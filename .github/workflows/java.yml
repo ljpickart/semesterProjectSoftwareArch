@@ -14,14 +14,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Run Sampler
+        run: nohup node sampler.js &
+
       - name: Compile Sensor
         run: javac Sensor.java
 
       - name: Compile Tests
         run: javac -cp ".:junit-platform-console-standalone.jar" TestCases.java
-
-      - name: Run Sampler
-        run: nohup node sampler.js &
 
       - name: Run Sensor
         run: java Sensor
