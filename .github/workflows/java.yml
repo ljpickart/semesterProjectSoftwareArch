@@ -13,7 +13,22 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Compile
+
+      - name: Compile Sensor
         run: javac Sensor.java
+
+      - name: Compile Tests
+        run: javac -cp ".:junit-platform-console-standalone.jar" TestCases.java
+
+      - name: Run Sampler
+        run: nohup node sampler.js &
+
       - name: Run Sensor
         run: java Sensor
+
+      - name: Run Unit Tests
+        run: |
+          java -jar junit-platform-console-standalone.jar \
+          --class-path . \
+          --scan-class-path \
+          --include-classname '.*TestCases'        
