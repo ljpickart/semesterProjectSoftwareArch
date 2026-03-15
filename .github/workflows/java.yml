@@ -17,25 +17,20 @@ jobs:
       - name: Run Sampler
         run: nohup node sampler.js &
 
-      - name: Compile Sensor and Tests
+      - name: Compile Sensor
         run: javac Sensor.java
-              javac -cp ".:junit-jupiter-api-5.10.0.jar" TestCases.java
-
+        
       - name: Download JUnit
         run: |
-          curl -L -o junit-jupiter-api-5.10.0.jar https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.10.0/junit-jupiter-api-5.10.0.jar
-          curl -L -o junit-jupiter-engine-5.10.0.jar https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/5.10.0/junit-jupiter-engine-5.10.0.jar
-          curl -L -o junit-platform-console-standalone-1.10.2.jar https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/junit-platform-console-standalone-1.10.2.jar
-
-      - name: Compile Tests
-        run: javac -cp ".:junit-jupiter-api-5.10.0.jar" TestCases.java
-
-      - name: Run Sensor
-        run: java Sensor
-
+          curl -L -o junit-platform-console-standalone-1.10.2.jar \
+            https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/junit-platform-console-standalone-1.10.2.jar
+      
+      - name: Compile TestCases
+        run: javac -cp ".:junit-platform-console-standalone-1.10.2.jar" TestCases.java
+      
       - name: Run Unit Tests
         run: |
           java -jar junit-platform-console-standalone-1.10.2.jar \
-            --class-path ".:junit-jupiter-api-5.10.0.jar:junit-jupiter-engine-5.10.0.jar" \
+            --class-path . \
             --scan-class-path \
-            --include-classname '.*TestCases'      
+            --include-classname '.*TestCases'   
