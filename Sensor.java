@@ -12,8 +12,8 @@ public class Sensor {
 
     // test
 
-    int count = 0;
-    while (count < 200) {
+    //int count = 0;
+    while (true) {
       double data = Math.random() * 25 + 15;
 
       // System.out.println("Sensor read: " + data);
@@ -23,7 +23,7 @@ public class Sensor {
       } catch (Exception e) {
         System.err.println("err while sending packet: " + e);
       }
-      count++;
+      //count++;
     }
   }
 
@@ -44,7 +44,7 @@ public class Sensor {
     HttpClient client = HttpClient.newHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create("http://" + hostname + ":" + port))
+        .uri(URI.create("http://" + hostname + ":" + port + "/"))
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(message))
         .build();
