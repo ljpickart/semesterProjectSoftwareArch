@@ -16,7 +16,8 @@ and converts the voltage data into temperature data.
 
 ## Python dependences (transformer.py)
 
-The python flask server runs in a virtual environment with these dependences (from pip freeze)
+The python flask server runs in a virtual environment with
+these dependences (from pip freeze):
 
 blinker==1.9.0
 click==8.3.1
@@ -26,3 +27,7 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
 Werkzeug==3.1.6
+
+Note:
+  Flask should install the other dependences listed such as jinja;
+  no need to install all of these individually.

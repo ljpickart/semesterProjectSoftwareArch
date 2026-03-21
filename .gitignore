@@ -1,2 +1,7 @@
 # Ignore temporary java files and executables
 Sensor.class
+
+# Ignore python virtual environment
+.venv
+venv
+__pycache__
