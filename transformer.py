@@ -13,14 +13,14 @@ def voltage_to_temperature_json():
         json_packet = request.json
         print(f"JSON FROM SAMPLER: {{\n{json_packet}\n}}")
 
-        voltage = json_packet.get("sampled")
+        voltage = json_packet.get("sampledVoltage")
 
         # Converts it to temperature
         temperature = voltage_to_temperature(voltage)
 
         # Returns temperature in JSON
         return {
-            "voltage": temperature,
+            "temperature": temperature,
         }  # Flask converts dicts to JSON
     else:
         # visual HTTP for users
@@ -28,4 +28,10 @@ def voltage_to_temperature_json():
 
 
 def voltage_to_temperature(voltage):
+    if isinstance(voltage, list):
+        return [v * 2 for v in voltage]
     return voltage * 2
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
