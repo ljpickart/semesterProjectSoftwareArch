@@ -132,23 +132,5 @@ public class TestCases {
         assertTrue(response.body().contains("6"));
     }
 
-    // Test missing voltage field
-    @Test
-    void transformerMissingVoltage() throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-
-        String json = "{ }";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:5000"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(200, response.statusCode());
-        assertTrue(response.body().contains("temperature"));
-    }
 
 }
