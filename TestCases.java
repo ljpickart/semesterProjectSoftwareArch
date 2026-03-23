@@ -13,6 +13,10 @@ import java.lang.reflect.Method;
 
 public class TestCases {
 
+    /*
+    *   Test cases for sensor 
+    */
+
     // Test that sendPacket method exists
     @Test
     void testSendPacketMethodExists() throws Exception {
@@ -65,6 +69,86 @@ public class TestCases {
         // Check the server responds 200 and returns "Data received."
         assertEquals(200, response.statusCode());
         assertEquals("Data received.", response.body().trim());
+    }
+
+
+    /*
+    *   Test cases for transformer
+    */
+
+    // Test GET request
+    @Test
+    void transformerGetRequest() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:5000"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("hello"));
+    }
+
+    // Test POST with single voltage value
+    @Test
+    void transformerSingleVoltage() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        String json = "{ \"sampledVoltage\": 10 }";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:5000"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("20")); 
+    }
+
+    // Test POST with multiple voltages 
+    @Test
+    void transformerVoltageList() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        String json = "{ \"sampledVoltage\": [1, 2, 3] }";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:5000"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("2"));
+        assertTrue(response.body().contains("4"));
+        assertTrue(response.body().contains("6"));
+    }
+
+    // Test missing voltage field
+    @Test
+    void transformerMissingVoltage() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        String json = "{ }";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:5000"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("temperature"));
     }
 
 }
