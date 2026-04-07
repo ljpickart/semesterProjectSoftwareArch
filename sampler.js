@@ -1,9 +1,13 @@
 const { createServer } = require('node:http');
+const http = require('node:http');
 
 const debug = false;
 
 const hostname = '127.0.0.1';
 const port = 3000;
+
+const transformerHost = '127.0.0.1';
+const transformerPort = 5000;
 
 let newRequest = null;
 
@@ -73,9 +77,43 @@ const server = createServer((req, res) => {
             const returnRes = newRequest.res;
             newRequest = null;
 
-            returnRes.statusCode = 200;
-            returnRes.setHeader('Content-Type', 'application/json');
-            returnRes.end(JSON.stringify({ sampleSuccessful: 1, responseMessage: "Success", numberOfSamples, sampleData }))
+            const body = JSON.stringify({sampleData});
+            const options = {
+              hostname: transformerHost,
+              port: transformerPort,
+              path: '/',
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            };
+
+            const transformerRequest = http.request(options, (transformerResponse) => {
+              let transformerRequestBody = '';
+              transformerResponse.on('data', c =>{transformerRequestBody += c});
+              transformerResponse.on('end', () => {
+                console.log("Transformer Response: ", transformerRequestBody);
+                returnRes.statusCode = 200;
+                returnRes.setHeader('Content-Type', 'application/json');
+                returnRes.end(JSON.stringify({
+                  sampleSuccessful: 1,
+                  responseMessage: "Success",
+                  numberOfSamples,
+                  sampledVoltage: sampleData,
+                  transformerResult: JSON.parse(transformerRequestBody),
+                }))
+              })
+
+            })
+
+            transformerRequest.on('error', (e) => {
+              console.error("Error forwarding to transformer:", e);
+              returnRes.statusCode = 502;
+              returnRes.end("Failed to reach transformer");
+            });
+ 
+            transformerRequest.write(body);
+            transformerRequest.end();
           }
         }
 

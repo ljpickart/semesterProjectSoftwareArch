@@ -10,20 +10,14 @@ public class Sensor {
     // Implement a count variable for simulation purposes. Can't have an infinite
     // loop for the sake of the CI/CD pipeline
 
-    // test
-
-    //int count = 0;
     while (true) {
       double data = Math.random() * 25 + 15;
-
-      // System.out.println("Sensor read: " + data);
 
       try {
         sendPacket(data);
       } catch (Exception e) {
         System.err.println("err while sending packet: " + e);
       }
-      //count++;
     }
   }
 
@@ -31,13 +25,12 @@ public class Sensor {
   private static void sendPacket(double measurement) throws Exception {
     String hostname = "127.0.0.1";
     int port = 3000;
-    // LocalTime currentTime = LocalTime.now();
 
     // Java has JSON libraries, but manually contructed JSON will
     // be easier for us probably
     String message = """
         {
-          "measurement": "%f"
+          "measurement": %f
         }
         """.formatted(measurement);
 
