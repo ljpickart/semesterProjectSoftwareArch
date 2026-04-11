@@ -3,14 +3,28 @@
 from flask import Flask, request
 from datetime import datetime, timezone
 import psycopg2
+import os
 
 app = Flask(__name__)
 
-#def getDatabase():
+# Get connection to database
+def getDatabase():
     #TODO: return the database
+    return psycopg2.connect(
+        host=os.environ.get("DB_HOST", "localhost")
+        port=os.environ.get("DB_PORT", 5432)
+        dbname=os.environ.get("DB_NAME", "weatherstation")
+        user=os.environ.get("DB_USER", "postgres")
+        password=os.environ.get("DB_PASS", "password")
+    )
 
-# initDatabase():
-    #TODO
+# initialize/create database
+def initDatabase():
+    connection = getDatabase()
+    cursor = connection.cursor()
+    cursor.execute("""
+CREATE TABLE IF NOT EXISTS temperatures (id PRIMARY KEY, temperature FLOAT NOT NULL, timestamp TIMESTAMPTZ NOT NULL)""")
+
 
 @app.route("/temperature", methods=["POST"])
 def storeInDatabase():
