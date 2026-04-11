@@ -6,6 +6,7 @@ import requests
 
 app = Flask(__name__)
 
+# TODO: Using localhost will block traffic from other containers
 REST_API_url = "http://localhost:5001/temperature"
 
 @app.route("/", methods=["GET", "POST"])

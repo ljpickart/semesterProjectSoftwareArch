@@ -1,0 +1,62 @@
+# compose file to make it easy
+# to run the whole group of programs
+# services are ordered by number of dependencies
+
+
+services:
+  db:
+    image: postgres
+    # Not sure if these two are necessary. Taken from postgres example.
+    restart: always
+    shm_size: 128mb
+    # Environment variables
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: readings_db
+    # Mount local db-data folder onto the container at runtime.
+    # Allows for persistent data since the data lives on our own physical PC
+    volumes:
+      - ./db-data:/var/lib/postresql/data
+   
+  restapi:
+    build:
+      context: ./restapi
+    environment:
+      - DB_HOST=postgresql #???
+      - DB_PORT=admin #???
+      - DB_NAME=readings_db
+      - DB_USER=user
+      - DB_PASS=pass
+    #- DATABASE_URL=postresql://admin:password123@db:5432/pipeline_db
+    depends_on:
+      - db 
+
+  sensor:
+    # Specifies location of dockerfile
+    build:
+      context: ./sensor
+    # These environment variables store endpoint URLs, which is handy 
+    environment: 
+      - SAMPLER_URL=https://sampler:3000/data
+    # depends_on allows for dependencies and build order in docker compose
+    depends_on: 
+      - sampler
+  
+  sampler:
+    build:
+      context: ./sampler
+    environment:
+      - TRANSFORMER_URL=https://sampler:3000/data
+    depends_on:
+    - transformer
+  
+  transformer:
+    build:
+      context: ./transformer
+    environment:
+      - RESTAPI_URL=https://rest-api:5000/data
+    depends_on:
+      - restapi
+
+
