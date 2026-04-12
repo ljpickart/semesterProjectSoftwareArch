@@ -3,10 +3,10 @@ const http = require('node:http');
 
 const debug = false;
 
-const hostname = '127.0.0.1';
+const hostname = '0.0.0.0';
 const port = 3000;
 
-const transformerHost = '127.0.0.1';
+const transformerHost = 'transformer';
 const transformerPort = 5000;
 
 let newRequest = null;
@@ -29,6 +29,11 @@ const server = createServer((req, res) => {
     .on('end', () => {
       body = Buffer.concat(body).toString();
 
+      if(!body.trim()) {
+        res.statusCode = 200;
+        res.end("OK");
+        return;
+      }
       // Print raw json data if debug option is set
       if (debug) console.log("raw string:", body);
 

@@ -18,19 +18,26 @@ services:
     # Allows for persistent data since the data lives on our own physical PC
     volumes:
       - ./db-data:/var/lib/postresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d readings_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
    
   restapi:
     build:
       context: ./restapi
     environment:
-      - DB_HOST=postgresql #???
-      - DB_PORT=admin #???
+      - DB_HOST=db
+      - DB_PORT=5432
       - DB_NAME=readings_db
       - DB_USER=user
       - DB_PASS=pass
     #- DATABASE_URL=postresql://admin:password123@db:5432/pipeline_db
     depends_on:
-      - db 
+      db:
+        condition: service_healthy # wait until the database is running and good to go, not just until the container is created 
 
   sensor:
     # Specifies location of dockerfile
@@ -38,24 +45,31 @@ services:
       context: ./sensor
     # These environment variables store endpoint URLs, which is handy 
     environment: 
-      - SAMPLER_URL=https://sampler:3000/data
+      - SAMPLER_URL=http://sampler:3000/
     # depends_on allows for dependencies and build order in docker compose
     depends_on: 
-      - sampler
+      sampler:
+        condition: service_healthy # wait for sampler to start up
   
   sampler:
     build:
       context: ./sampler
     environment:
-      - TRANSFORMER_URL=https://sampler:3000/data
+      - TRANSFORMER_URL=http://transformer:5000/data
     depends_on:
     - transformer
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
   
   transformer:
     build:
       context: ./transformer
     environment:
-      - RESTAPI_URL=https://rest-api:5000/data
+      - RESTAPI_URL=http://rest-api:5001/data
     depends_on:
       - restapi
 

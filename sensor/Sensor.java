@@ -1,3 +1,4 @@
+package sensor;
 import java.time.LocalTime;
 
 import java.net.URI;
@@ -23,7 +24,7 @@ public class Sensor {
 
   // Function for sending data to the sampler
   private static void sendPacket(double measurement) throws Exception {
-    String hostname = "127.0.0.1";
+    String hostname = "sampler";
     int port = 3000;
 
     // Java has JSON libraries, but manually contructed JSON will
@@ -42,9 +43,22 @@ public class Sensor {
         .POST(HttpRequest.BodyPublishers.ofString(message))
         .build();
 
-    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    int maxRetries = 10;
+    for(int retryAttempt = 1; retryAttempt <= maxRetries; retryAttempt++) {
+      try {
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-    System.out.println("Status Code: " + response.statusCode());
-    System.out.println("Response Body: " + response.body());
+        System.out.println("Status Code: " + response.statusCode());
+        System.out.println("Response Body: " + response.body());
+        return;
+      } catch (java.net.ConnectException e) {
+        System.err.println("Attempt " + retryAttempt + " out of " + maxRetries);
+        if(retryAttempt == maxRetries) {
+          throw e;
+        }
+        Thread.sleep(2000);
+      }
+    }
+    
   }
 }

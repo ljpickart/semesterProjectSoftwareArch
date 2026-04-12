@@ -2,6 +2,9 @@
 // Run test cases by using the command: java -jar junit-platform-console-standalone-1.10.2.jar --class-path . --scan-class-path --include-classname '.*TestCases'
 
 import org.junit.jupiter.api.Test;
+
+import sensor.Sensor;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;

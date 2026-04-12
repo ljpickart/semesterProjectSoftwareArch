@@ -7,7 +7,7 @@ import requests
 app = Flask(__name__)
 
 # TODO: Using localhost will block traffic from other containers
-REST_API_url = "http://localhost:5001/temperature"
+REST_API_url = "http://rest-api:5001/temperature"
 
 @app.route("/", methods=["GET", "POST"])
 def voltage_to_temperature_json():
@@ -17,7 +17,7 @@ def voltage_to_temperature_json():
         json_packet = request.json
         print(f"JSON FROM SAMPLER: {{\n{json_packet}\n}}")
 
-        voltage = json_packet.get("sampledVoltage")
+        voltage = json_packet.get("sampleData")
 
         # Converts it to temperature
         temperature = voltage_to_temperature(voltage)
@@ -48,4 +48,4 @@ def voltage_to_temperature(voltage):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
