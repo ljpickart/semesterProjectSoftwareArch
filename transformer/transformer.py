@@ -3,11 +3,17 @@
 from flask import Flask, request, jsonify
 from datetime import datetime, timezone
 import requests
+import os
 
 app = Flask(__name__)
 
 # TODO: Using localhost will block traffic from other containers
-REST_API_url = "http://rest-api:5001/temperature"
+REST_API_URL = os.environ.get("RESTAPI_URL", "http://rest-api:5001/temperature")
+
+TRANSFORMER_HOST = os.environ.get("TRANSFORMER_HOST", "transformer")
+TRANSFORMER_PORT = os.environ.get("TRANSFORMER_PORT", "5000")
+
+DEBUG = True
 
 @app.route("/", methods=["GET", "POST"])
 def voltage_to_temperature_json():
@@ -15,7 +21,8 @@ def voltage_to_temperature_json():
         # Receives sampled voltage
         # Integrates with the existing Sampler
         json_packet = request.json
-        print(f"JSON FROM SAMPLER: {{\n{json_packet}\n}}")
+        if DEBUG: 
+            print(f"JSON FROM SAMPLER: {{\n{json_packet}\n}}")
 
         voltage = json_packet.get("sampleData")
 
@@ -26,7 +33,7 @@ def voltage_to_temperature_json():
         payload = {"temperature": temperature, "timestamp": time}
         
         try:
-            response = requests.post(REST_API_url, json=payload, timeout=5)
+            response = requests.post(REST_API_URL, json=payload, timeout=5)
             result = response.json()
         except Exception as e:
             return "ERROR Reaching REST API"
@@ -48,4 +55,4 @@ def voltage_to_temperature(voltage):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host=TRANSFORMER_HOST, port=TRANSFORMER_PORT, debug=True)

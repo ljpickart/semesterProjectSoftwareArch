@@ -10,6 +10,7 @@ app = Flask(__name__)
 # Get connection to database
 def getDatabase():
     #TODO: return the database
+    print("Connecting to db")
     return psycopg2.connect(
         host=os.environ.get("DB_HOST", "localhost"),
         port=int(os.environ.get("DB_PORT", 5432)),

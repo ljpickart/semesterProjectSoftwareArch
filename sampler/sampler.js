@@ -1,13 +1,15 @@
 const { createServer } = require('node:http');
 const http = require('node:http');
 
-const debug = false;
+const debug = true;
 
-const hostname = '0.0.0.0';
+const hostname = 'sampler';
 const port = 3000;
 
-const transformerHost = 'transformer';
-const transformerPort = 5000;
+// const transformerHost = 'transformer';
+// const transformerPort = 5000;
+const transformerHost = process.env.TRANSFORMER_HOST;
+const transformerPort = process.env.TRANSFORMER_PORT;
 
 let newRequest = null;
 

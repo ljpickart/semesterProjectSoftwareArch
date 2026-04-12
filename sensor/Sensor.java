@@ -7,7 +7,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class Sensor {
+  static String sampler_url;
+  static boolean first_message = false;
+
   public static void main(String[] args) {
+    sampler_url = System.getenv("SAMPLER_URL");
     // Implement a count variable for simulation purposes. Can't have an infinite
     // loop for the sake of the CI/CD pipeline
 
@@ -24,8 +28,8 @@ public class Sensor {
 
   // Function for sending data to the sampler
   private static void sendPacket(double measurement) throws Exception {
-    String hostname = "sampler";
-    int port = 3000;
+    // String hostname = "sampler";
+    // int port = 3000;
 
     // Java has JSON libraries, but manually contructed JSON will
     // be easier for us probably
@@ -38,7 +42,7 @@ public class Sensor {
     HttpClient client = HttpClient.newHttpClient();
 
     HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create("http://" + hostname + ":" + port + "/"))
+        .uri(URI.create(sampler_url))
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(message))
         .build();
@@ -48,8 +52,11 @@ public class Sensor {
       try {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        System.out.println("Status Code: " + response.statusCode());
-        System.out.println("Response Body: " + response.body());
+        if (first_message) {
+          System.out.println("SENSOR: first message, Status Code: " + response.statusCode());
+          System.out.println("SENSOR: first message, Response Body: " + response.body());
+          first_message = false;
+        }
         return;
       } catch (java.net.ConnectException e) {
         System.err.println("Attempt " + retryAttempt + " out of " + maxRetries);
