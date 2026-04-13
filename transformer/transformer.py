@@ -8,10 +8,10 @@ import os
 app = Flask(__name__)
 
 # TODO: Using localhost will block traffic from other containers
-REST_API_URL = os.environ.get("RESTAPI_URL", "http://rest-api:5001/temperature")
+REST_API_URL = os.environ.get("RESTAPI_URL")
 
-TRANSFORMER_HOST = os.environ.get("TRANSFORMER_HOST", "transformer")
-TRANSFORMER_PORT = os.environ.get("TRANSFORMER_PORT", "5000")
+TRANSFORMER_HOST = os.environ.get("TRANSFORMER_HOST")
+TRANSFORMER_PORT = os.environ.get("TRANSFORMER_PORT")
 
 DEBUG = True
 

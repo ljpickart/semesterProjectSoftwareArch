@@ -7,16 +7,18 @@ import os
 
 app = Flask(__name__)
 
+RESTAPI_PORT = os.environ.get("RESTAPI_PORT")
+
 # Get connection to database
 def getDatabase():
     #TODO: return the database
     print("Connecting to db")
     return psycopg2.connect(
-        host=os.environ.get("DB_HOST", "db"),
-        port=int(os.environ.get("DB_PORT", 5432)),
-        dbname=os.environ.get("DB_NAME", "readings_db"),
-        user=os.environ.get("DB_USER", "user"),
-        password=os.environ.get("DB_PASS", "pass")
+        host=os.environ.get("DB_HOST"),
+        port=int(os.environ.get("DB_PORT")),
+        dbname=os.environ.get("DB_NAME"),
+        user=os.environ.get("DB_USER"),
+        password=os.environ.get("DB_PASS")
     )
 
 # initialize/create database
@@ -59,5 +61,5 @@ def storeInDatabase():
 
 if __name__ == "__main__":
     initDatabase()
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=RESTAPI_PORT, debug=True)
 

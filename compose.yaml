@@ -25,19 +25,6 @@ services:
       retries: 10
       start_period: 30s
    
-  restapi:
-    build:
-      context: ./restapi
-    environment:
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=readings_db
-      - DB_USER=user
-      - DB_PASS=pass
-    #- DATABASE_URL=postresql://admin:password123@db:5432/pipeline_db
-    depends_on:
-      db:
-        condition: service_healthy # wait until the database is running and good to go, not just until the container is created 
 
   sensor:
     # Specifies location of dockerfile
@@ -79,4 +66,18 @@ services:
     depends_on:
       - restapi
 
+  restapi:
+    build:
+      context: ./restapi
+    environment:
+      - RESTAPI_PORT=5001
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=readings_db
+      - DB_USER=user
+      - DB_PASS=pass
+    #- DATABASE_URL=postresql://admin:password123@db:5432/pipeline_db
+    depends_on:
+      db:
+        condition: service_healthy # wait until the database is running and good to go, not just until the container is created 
 
