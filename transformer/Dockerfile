@@ -1,5 +1,5 @@
 FROM python:3.12-slim
-WORKDIR /restapi
+WORKDIR /app
 COPY dependencies.txt .
 RUN pip install -r dependencies.txt
 

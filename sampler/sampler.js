@@ -1,17 +1,19 @@
 const { createServer } = require('node:http');
 const http = require('node:http');
 
-const debug = true;
+const debug = false;
 
 const hostname = '0.0.0.0';
 const port = 3000;
 
-// const transformerHost = 'transformer';
-// const transformerPort = 5000;
 const transformerHost = process.env.TRANSFORMER_HOST;
 const transformerPort = process.env.TRANSFORMER_PORT;
 
-let newRequest = null;
+let newRequest = {
+  numberOfSamples: 1,
+  sampleData: [],
+  res: null 
+};
 
 const server = createServer((req, res) => {
 
@@ -22,7 +24,6 @@ const server = createServer((req, res) => {
     }
   });
 
-  // Taken from https://nodejs.org/en/learn/http/anatomy-of-an-http-transaction#a-quick-thing-about-errors
   let body = [];
   req
     .on('data', chunk => {
@@ -36,13 +37,10 @@ const server = createServer((req, res) => {
         res.end("OK");
         return;
       }
-      // Print raw json data if debug option is set
-      if (debug) console.log("raw string:", body);
 
       let parsed;
       try {
         parsed = JSON.parse(body);
-        //console.log(parsed);
       }
       catch (error) {
         console.error("ERROR: failed to parse json:", error.message);
@@ -52,12 +50,11 @@ const server = createServer((req, res) => {
         return;
       }
 
-      //data coming in from sensor
-      // JSON format: {measurement: x}
+      const currentReq = newRequest; 
+
       if (req.url === "/") {
         const dataValue = parseFloat(parsed.measurement);
 
-        //sanity checking
         if (dataValue > 150 || dataValue < -175) {
           res.statusCode = 400;
           res.end("Bad measurement from sensor");
@@ -67,23 +64,26 @@ const server = createServer((req, res) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'text/plain');
         res.end('Data received.');
+        
+        console.log(`Received data from sensor. State of newRequest: ${currentReq ? 'ACTIVE' : 'NULL (Dropping data)'}`);
 
-        //if no current request for data from the sensor, ignore the data
-        if (newRequest == null) {
+        if (!currentReq) { 
           return;
         } else {
           console.log("Request for data from sensor filled");
 
-          //put data into return JSON object
-          newRequest.sampleData.push(dataValue);
+          currentReq.sampleData.push(dataValue); 
 
-          //check if all the requested samples have been filled
-          if (newRequest.sampleData.length >= newRequest.numberOfSamples) {
-            const numberOfSamples = newRequest.numberOfSamples;
-            const sampleData = newRequest.sampleData;
-            const returnRes = newRequest.res;
-            newRequest = null;
-
+          console.log(`checking sample length, length [${currentReq.sampleData.length}] >= req [${currentReq.numberOfSamples}]`)
+          
+          if (currentReq.sampleData.length >= currentReq.numberOfSamples) {
+            console.log(`requirement filled, sending packet`);
+            const numberOfSamples = currentReq.numberOfSamples;
+            const sampleData = currentReq.sampleData;
+            const returnRes = currentReq.res; 
+            
+            currentReq.sampleData = []; 
+            
             const body = JSON.stringify({sampleData});
             const options = {
               hostname: transformerHost,
@@ -100,43 +100,47 @@ const server = createServer((req, res) => {
               transformerResponse.on('data', c =>{transformerRequestBody += c});
               transformerResponse.on('end', () => {
                 console.log("Transformer Response: ", transformerRequestBody);
-                returnRes.statusCode = 200;
-                returnRes.setHeader('Content-Type', 'application/json');
-                returnRes.end(JSON.stringify({
-                  sampleSuccessful: 1,
-                  responseMessage: "Success",
-                  numberOfSamples,
-                  sampledVoltage: sampleData,
-                  transformerResult: JSON.parse(transformerRequestBody),
-                }))
+                
+                if (returnRes) { 
+                  returnRes.statusCode = 200;
+                  returnRes.setHeader('Content-Type', 'application/json');
+                  returnRes.end(JSON.stringify({
+                    sampleSuccessful: 1,
+                    responseMessage: "Success",
+                    numberOfSamples,
+                    sampledVoltage: sampleData,
+                    transformerResult: JSON.parse(transformerRequestBody),
+                  }));
+                } else {
+                  console.log("Background batch complete. No client to respond to.");
+                }
               })
-
             })
 
             transformerRequest.on('error', (e) => {
               console.error("Error forwarding to transformer:", e);
-              returnRes.statusCode = 502;
-              returnRes.end("Failed to reach transformer");
+              if (returnRes) {
+                returnRes.statusCode = 502;
+                returnRes.end("Failed to reach transformer");
+              }
             });
- 
+
             transformerRequest.write(body);
             transformerRequest.end();
           }
         }
 
-        //POST /sample endpoint, client posts to this endpoint with number of samples and recieves the data
       } else if (req.url === '/sample') {
         const numberOfSamples = parsed.numberOfSamples;
 
         if (numberOfSamples === null || numberOfSamples < 1) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ sampleSuccessful: 0, responseMessage: "Improper number of samples requested" }));
+          res.end(JSON.stringify({ sampleSuccessful: 0, responseMessage: "Improper samples requested" }));
           return;
         }
 
         newRequest = { numberOfSamples, sampleData: [], res };
-
       }
     })
 });

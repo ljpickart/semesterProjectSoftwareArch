@@ -17,11 +17,13 @@ DEBUG = True
 
 @app.route("/", methods=["GET", "POST"])
 def voltage_to_temperature_json():
+    app.logger.info("HI")
     if request.method == "POST":
         # Receives sampled voltage
         # Integrates with the existing Sampler
         json_packet = request.json
         if DEBUG: 
+            app.logger.info(f"JSON FROM SAMPLER: {{\n{json_packet}\n}}")
             print(f"JSON FROM SAMPLER: {{\n{json_packet}\n}}")
 
         voltage = json_packet.get("sampleData")
