@@ -1,4 +1,7 @@
 name: Run Sensor Simulation
+env:
+  SAMPLER_HOST: sampler
+  TRANSFORMER_HOST: transformer
 on:
   push:
     branches: [ main ]
