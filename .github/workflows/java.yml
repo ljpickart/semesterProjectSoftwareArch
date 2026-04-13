@@ -22,13 +22,13 @@ jobs:
         run: pip install flask
 
       - name: Run Transformer
-        run: nohup python transformer.py &
+        run: nohup python transformer/transformer.py &
 
       - name: Run Sampler
         run: nohup node sampler.js &
 
       - name: Compile Sensor
-        run: javac Sensor.java
+        run: javac sensor/Sensor.java
         
       - name: Download JUnit
         run: |
