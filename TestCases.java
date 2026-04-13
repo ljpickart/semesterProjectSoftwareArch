@@ -20,6 +20,9 @@ public class TestCases {
     *   Test cases for sensor 
     */
 
+    private static final String SAMPLER_HOST = System.getenv().getOrDefault("SAMPLER_HOST", "127.0.0.1");
+    private static final String TRANSFORMER_HOST = System.getenv().getOrDefault("TRANSFORMER_HOST", "127.0.0.1");
+
     // Test that sendPacket method exists
     @Test
     void testSendPacketMethodExists() throws Exception {
@@ -62,7 +65,7 @@ public class TestCases {
         String json = "{ \"measurement\": 25 }";
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:3000"))
+                .uri(URI.create("http://" + SAMPLER_HOST + ":3000"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -85,7 +88,7 @@ public class TestCases {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:5000"))
+                .uri(URI.create("http://" + TRANSFORMER_HOST + ":5000"))
                 .GET()
                 .build();
 
@@ -103,7 +106,7 @@ public class TestCases {
         String json = "{ \"sampledVoltage\": 10 }";
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:5000"))
+                .uri(URI.create("http://" + TRANSFORMER_HOST + ":5000"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -122,7 +125,7 @@ public class TestCases {
         String json = "{ \"sampledVoltage\": [1, 2, 3] }";
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://127.0.0.1:5000"))
+                .uri(URI.create("http://" + TRANSFORMER_HOST + ":5000"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
