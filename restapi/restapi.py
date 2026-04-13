@@ -12,11 +12,11 @@ def getDatabase():
     #TODO: return the database
     print("Connecting to db")
     return psycopg2.connect(
-        host=os.environ.get("DB_HOST", "localhost"),
+        host=os.environ.get("DB_HOST", "db"),
         port=int(os.environ.get("DB_PORT", 5432)),
-        dbname=os.environ.get("DB_NAME", "weatherstation"),
-        user=os.environ.get("DB_USER", "postgres"),
-        password=os.environ.get("DB_PASS", "password")
+        dbname=os.environ.get("DB_NAME", "readings_db"),
+        user=os.environ.get("DB_USER", "user"),
+        password=os.environ.get("DB_PASS", "pass")
     )
 
 # initialize/create database
@@ -32,8 +32,10 @@ CREATE TABLE IF NOT EXISTS temperatures (id SERIAL PRIMARY KEY, temperature FLOA
 @app.route("/temperature", methods=["POST"])
 def storeInDatabase():
     data = request.get_json()
+    print("Recieved data: ", data)
     temperature = data.get("temperature")
     time = data.get("timestamp")
+    print(f"Temperature: {temperature}, Time: {time}")
 
     #validate temperature
     if temperature < -125 or temperature > 150:
@@ -45,10 +47,12 @@ def storeInDatabase():
         cursor.execute("INSERT INTO temperatures (temperature, timestamp) VALUES (%s, %s) RETURNING id", (temperature, time))
         id = cursor.fetchone()[0]
         dbase.commit()
+        print(f"Inserted row with id: {id}")
         cursor.close()
         dbase.close()
         #TODO: finish implementing here
     except Exception as e:
+        print("DATABASE ERROR: ", e)
         return "DATABASE ERROR: " + str(e)
     
     return jsonify({"status": "stored", "id": id})

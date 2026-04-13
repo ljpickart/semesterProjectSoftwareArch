@@ -3,7 +3,7 @@ const http = require('node:http');
 
 const debug = true;
 
-const hostname = 'sampler';
+const hostname = '0.0.0.0';
 const port = 3000;
 
 // const transformerHost = 'transformer';

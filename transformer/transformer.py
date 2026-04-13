@@ -50,9 +50,10 @@ def voltage_to_temperature_json():
 
 def voltage_to_temperature(voltage):
     if isinstance(voltage, list):
-        return [v * 2 for v in voltage]
+        converted = [v * 2 for v in voltage]
+        return sum(converted) / len(converted)
     return voltage * 2
 
 
 if __name__ == "__main__":
-    app.run(host=TRANSFORMER_HOST, port=TRANSFORMER_PORT, debug=True)
+    app.run(host='0.0.0.0', port=int(TRANSFORMER_PORT), debug=True)

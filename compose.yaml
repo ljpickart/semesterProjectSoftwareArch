@@ -17,13 +17,13 @@ services:
     # Mount local db-data folder onto the container at runtime.
     # Allows for persistent data since the data lives on our own physical PC
     volumes:
-      - ./db-data:/var/lib/postresql/data
-    #healthcheck:
-    #  test: ["CMD-SHELL", "pg_isready -U user -d readings_db"]
-    #  interval: 5s
-    #  timeout: 5s
-    #  retries: 5
-    #  start_period: 10s
+      - ./db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d readings_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
    
   restapi:
     build:
@@ -35,9 +35,9 @@ services:
       - DB_USER=user
       - DB_PASS=pass
     #- DATABASE_URL=postresql://admin:password123@db:5432/pipeline_db
-    #depends_on:
-    #  db:
-    #    condition: service_healthy # wait until the database is running and good to go, not just until the container is created 
+    depends_on:
+      db:
+        condition: service_healthy # wait until the database is running and good to go, not just until the container is created 
 
   sensor:
     # Specifies location of dockerfile
@@ -47,9 +47,9 @@ services:
     environment: 
       - SAMPLER_URL=http://sampler:3000/
     # depends_on allows for dependencies and build order in docker compose
-    #depends_on: 
-    #  sampler:
-    #    condition: service_healthy # wait for sampler to start up
+    depends_on: 
+      sampler:
+        condition: service_healthy # wait for sampler to start up
   
   sampler:
     build:
@@ -60,12 +60,14 @@ services:
       # - TRANSFORMER_URL=http://transformer:5000/data
     depends_on:
     - transformer
-    # healthcheck:
-    # test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
-    #  interval: 5s
-    #  timeout: 3s
-    #  retries: 5
-    #  start_period: 5s
+    ports: 
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
   
   transformer:
     build:
@@ -73,7 +75,7 @@ services:
     environment:
       - TRANSFORMER_HOST=transformer
       - TRANSFORMER_PORT=5000
-      - RESTAPI_URL=http://rest-api:5001/data
+      - RESTAPI_URL=http://restapi:5001/temperature
     depends_on:
       - restapi
 
